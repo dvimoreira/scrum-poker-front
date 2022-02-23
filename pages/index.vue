@@ -62,19 +62,50 @@ export default {
 
   data () {
     return {
-      form: {}
+      form: {
+        name: '',
+        room: ''
+      },
+
+      socket: {}
     }
   },
 
-  mounted () {
-    this.socket = this.$nuxtSocket({
-      channel: '/index'
-    })
-  },
+  // mounted () {
+  //   this.socket = this.$nuxtSocket({
+  //     name: '/main'
+  //   })
+  // },
 
   methods: {
     onSubmit () {
-      //
+      this.socket = this.$nuxtSocket({
+        name: 'main',
+        query: {
+          roomId: this.form.room_code,
+          name: this.form.name
+        }
+      })
+
+      this.clickedStart = true
+
+      setTimeout(() => {
+        if (!this.isStarted) {
+          this.error = 'Não foi possível iniciar a sessão, tente novamente.'
+        }
+      }, 5000)
+
+      this.socket.on('room', (roomId) => {
+        if (roomId) {
+          this.isStarted = true
+          this.$router.push({
+            path: '/voting/${}'.replace('${}', roomId),
+            params: {
+              roomId
+            }
+          })
+        }
+      })
     }
   }
 }

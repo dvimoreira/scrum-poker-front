@@ -307,11 +307,37 @@ export default {
   name: 'VotingPage',
   data () {
     return {
+      socket: {},
       navigationOption: '',
       form: {
         card_type: null
       },
-      resultModal: false
+      resultModal: false,
+      name: '',
+      countdown: 0,
+      interval: {}
+    }
+  },
+
+  mounted () {
+    const storedName = localStorage.getItem('name')
+    if (storedName) {
+      this.enteredName(storedName)
+    }
+
+    console.log(this.$store.state.socket)
+    if (this.$store.state.socket) {
+      this.setupSocketHandlers()
+    } else {
+      this.socket = this.$nuxtSocket({
+        name: 'main',
+        query: {
+          roomId: this.form.room_code,
+          name: this.form.name
+        }
+      })
+
+      this.$store.commit('SET_SOCKET', this.socket)
     }
   },
 
@@ -330,6 +356,107 @@ export default {
         message: 'Feito com muito carinho por: <br><b>David Moreira</b> e <b>Douglas Ochner</b>.',
         type: 'is-danger',
         confirmText: 'Fechar'
+      })
+    },
+
+    resultModalClicked () {
+      this.$store.state.socket.emit('show')
+    },
+
+    getPlayers () {
+      return this.$store.state.players
+    },
+
+    performVote (vote) {
+      this.$store.state.socket.emit('vote', vote)
+    },
+
+    startNewGame () {
+      this.$store.state.socket.emit('restart')
+    },
+
+    emitName (name) {
+      this.$store.state.socket.emit('name', name)
+    },
+
+    enteredName (name) {
+      this.name = name
+      this.emitName(name)
+      localStorage.setItem('name', name)
+      this.resultModal = false
+    },
+
+    playerHasVoted () {
+      const players = this.$store.state.players
+      if (players.filter(p => p.vote !== null && p.vote !== undefined).length > 0) {
+        return true
+      }
+      return false
+    },
+
+    getAverage () {
+      const players = this.$store.state.players
+      let count = 0
+      let total = 0
+      for (const player of players) {
+        if (player.vote) {
+          total += parseInt(player.vote)
+          count++
+        }
+      }
+
+      return (total / count).toFixed(1).replace(/\.0+$/, '')
+    },
+
+    getMode () {
+      const players = this.$store.state.players
+      const scores = {}
+      for (const player of players) {
+        if (player.vote) {
+          if (scores[player.vote]) {
+            scores[player.vote] = scores[player.vote] + 1
+          } else {
+            scores[player.vote] = 1
+          }
+        }
+      }
+
+      let mostSeen = 1
+      let mostSeenCard = ''
+      for (const key in scores) {
+        const value = scores[key]
+        if (value > mostSeen) {
+          mostSeen = value
+          mostSeenCard = key
+        }
+      }
+      if (mostSeen === 1) {
+        return 'NA'
+      } else {
+        return mostSeenCard
+      }
+    },
+
+    setupSocketHandlers () {
+      this.$store.state.socket.on('update', (players) => {
+        this.$store.state.players = players
+      })
+      this.$store.state.socket.on('show', () => {
+        this.resultModal = true
+        clearInterval(this.interval)
+        this.countdown = 3
+        this.interval = setInterval(() => {
+          this.countdown -= 1
+          if (this.countdown === 0) {
+            clearInterval(this.interval)
+          }
+        }, 1000)
+      })
+      this.$store.state.socket.on('restart', () => {
+        this.resultModal = false
+      })
+      this.$store.state.socket.on('ping', () => {
+        this.$store.state.socket.emit('pong')
       })
     }
   }

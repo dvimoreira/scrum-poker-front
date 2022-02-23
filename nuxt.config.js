@@ -13,6 +13,10 @@ export default {
     ]
   },
 
+  server: {
+    port: 8081
+  },
+
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
   ],
@@ -72,7 +76,7 @@ export default {
     // module options
     sockets: [{
       name: 'main',
-      url: 'https://dochner-scrum-poker.herokuapp.com',
+      url: 'http://localhost:3000',
       default: true
     }]
   }
