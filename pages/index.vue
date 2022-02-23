@@ -68,7 +68,7 @@ export default {
 
   mounted () {
     this.socket = this.$nuxtSocket({
-      name: 'main'
+      channel: '/index'
     })
   },
 
