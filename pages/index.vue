@@ -62,8 +62,15 @@ export default {
 
   data () {
     return {
-      form: {}
+      form: {},
+      socket: null
     }
+  },
+
+  mounted () {
+    this.socket = this.$nuxtSocket({
+      channel: '/index'
+    })
   },
 
   methods: {
