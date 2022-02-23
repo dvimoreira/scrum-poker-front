@@ -62,14 +62,13 @@ export default {
 
   data () {
     return {
-      form: {},
-      socket: null
+      form: {}
     }
   },
 
   mounted () {
     this.socket = this.$nuxtSocket({
-      channel: '/index'
+      name: 'main'
     })
   },
 

@@ -72,7 +72,8 @@ export default {
     // module options
     sockets: [{
       name: 'main',
-      url: 'https://dochner-scrum-poker.herokuapp.com'
+      url: 'https://dochner-scrum-poker.herokuapp.com',
+      default: true
     }]
   }
 }
